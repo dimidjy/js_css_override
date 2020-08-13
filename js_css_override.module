@@ -1,0 +1,139 @@
+<?php
+
+use \Drupal\Core\Extension\ModuleHandlerInterface;
+
+function js_css_override_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets)
+{   
+    $moduleHandler = \Drupal::service('module_handler');
+    //This code override js files in theme and modules by js_css_override/override_js with same name
+    foreach($javascript as $key => $value){
+        //Prepare variables
+        $path = $value['data'];
+        $file_name = basename($value['data']);
+        $module_path = drupal_get_path('module', 'js_css_override');
+        $modules_for_override_path = $module_path.'/override_js/modules';
+        $themes_for_override_path = $module_path.'/override_js/themes';
+        $modules_for_override = scandir($modules_for_override_path);
+        $themes_for_override = scandir($themes_for_override_path);
+        //Delete . and .. folders 
+        unset($modules_for_override[0]);
+        unset($modules_for_override[1]);
+        unset($themes_for_override[0]);
+        unset($themes_for_override[1]);
+        
+        //Check all files override_js folder in path
+
+        //For modules
+        if(strstr($path , 'modules')){
+            foreach($modules_for_override as $module_for_override){
+                if(_check_in_path($module_for_override,$path,'module') && $moduleHandler->moduleExists($module_for_override)){
+                    $files_for_override_path = $module_path.'/override_js/modules/'.$module_for_override.'/';
+                    $files_for_override = scandir($files_for_override_path);
+                    unset($files_for_override[0]);
+                    unset($files_for_override[1]);
+                    foreach($files_for_override as $file_for_override){
+                        if($file_name == $file_for_override)
+                        {
+                            $new_file_path = '/'.$files_for_override_path.$file_name;
+                            $old_file_path = $value['data'];
+                            $javascript[$new_file_path] = &$javascript[$old_file_path];
+                            unset($javascript[$old_file_path]);
+                            $javascript[$new_file_path]['data'] = $new_file_path;
+                        }
+                    }
+                }
+            }
+        }
+
+        //For themes
+        if(strstr($path , 'themes')){
+            foreach($themes_for_override as $theme_for_override){
+                if(_check_in_path($theme_for_override,$path,'theme')){
+                    $files_for_override_path = $module_path.'/override_js/themes/'.$theme_for_override.'/';
+                    $files_for_override = scandir($files_for_override_path);
+                    unset($files_for_override[0]);
+                    unset($files_for_override[1]);
+                    foreach($files_for_override as $file_for_override){
+                        if($file_name == $file_for_override)
+                        {
+                            $new_file_path = '/'.$files_for_override_path.$file_name;
+                            $old_file_path = $value['data'];
+                            $javascript[$new_file_path] = &$javascript[$old_file_path];
+                            unset($javascript[$old_file_path]);
+                            $javascript[$new_file_path]['data'] = $new_file_path;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function js_css_override_css_alter(&$css)
+{   
+    $moduleHandler = \Drupal::service('module_handler');
+    // Same principle as for js
+    foreach($css as $key => $value){
+        $path = $value['data'];
+        $file_name = basename($value['data']);
+        $module_path = drupal_get_path('module', 'js_css_override');
+        $modules_for_override_path = $module_path.'/override_css/modules';
+        $themes_for_override_path = $module_path.'/override_css/themes';
+
+        $modules_for_override = scandir($modules_for_override_path);
+        $themes_for_override = scandir($themes_for_override_path);
+        unset($modules_for_override[0]);
+        unset($modules_for_override[1]);
+        unset($themes_for_override[0]);
+        unset($themes_for_override[1]);
+        if(strstr($path , 'modules')){
+            foreach($modules_for_override as $module_for_override){
+                if(_check_in_path($module_for_override,$path,'module') && $moduleHandler->moduleExists($module_for_override)){
+                    $files_for_override_path = $module_path.'/override_css/modules/'.$module_for_override.'/';
+                    $files_for_override = scandir($files_for_override_path);
+                    unset($files_for_override[0]);
+                    unset($files_for_override[1]);
+                    foreach($files_for_override as $file_for_override){
+                        if($file_name == $file_for_override)
+                        {
+                            $new_file_path = '/'.$files_for_override_path.$file_name;
+                            $old_file_path = $value['data'];
+                            $css[$new_file_path] = &$css[$old_file_path];
+                            unset($css[$old_file_path]);
+                            $css[$new_file_path]['data'] = $new_file_path;
+                        }
+                    }
+                }
+            }
+        }       
+        if(strstr($path , 'themes')){
+            foreach($themes_for_override as $theme_for_override){
+                if(_check_in_path($theme_for_override,$path,'theme')){
+                    $files_for_override_path = $module_path.'/override_css/themes/'.$theme_for_override.'/';
+                    $files_for_override = scandir($files_for_override_path);
+                    unset($files_for_override[0]);
+                    unset($files_for_override[1]);
+                    foreach($files_for_override as $file_for_override){
+                        if($file_name == $file_for_override)
+                        {
+                            $new_file_path = '/'.$files_for_override_path.$file_name;
+                            $old_file_path = $value['data'];
+                            $css[$new_file_path] = &$css[$old_file_path];
+                            unset($css[$old_file_path]);
+                            $css[$new_file_path]['data'] = $new_file_path;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function _check_in_path($name, $path, $what_search)
+{
+    $search_path = drupal_get_path($what_search, $name);
+    if(!empty($search_path))
+    {
+        return strstr($path, $search_path);
+    }
+}

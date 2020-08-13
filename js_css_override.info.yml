@@ -1,0 +1,4 @@
+name: JS CSS override
+type: module
+description: 'Custom module for override themes and modules js,css files'
+core: 8.x
